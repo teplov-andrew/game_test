@@ -34,6 +34,11 @@ def newtrash():
 	all_sprites.add(t)
 	trash.add(t)
 
+def newfish(fish_img, dir="left"):
+	f = Fish(fish_img, dir)
+	all_sprites.add(f)
+	fish.add(f)
+
 def draw_shield_bar(surf, x, y, pct):
 	if pct < 0:
 		pct = 0
@@ -100,6 +105,25 @@ class Trash(pygame.sprite.Sprite):
 		self.rect.x = random.randrange(WIDTH - self.rect.width)
 		self.rect.y = random.randrange(0, HEIGHT)
 
+class Fish(pygame.sprite.Sprite):
+	def __init__(self, fish_type, dir="left"):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = fish_type
+		self.image = pygame.transform.scale(self.image, (100, 50))
+		self.rect = self.image.get_rect()
+		self.rect.x = random.randrange(0, WIDTH)
+		self.rect.y = random.randrange(0, HEIGHT)
+		if dir == "left":
+			self.speedx = random.randrange(-3, 1)
+		else:
+			self.speedx = random.randrange(1, 3)
+
+	def update(self):
+		self.rect.x += self.speedx
+		if self.rect.left < -100 or self.rect.right > WIDTH + 100:
+			self.rect.x = random.randrange(0, WIDTH)
+			self.rect.y = random.randrange(0, HEIGHT)
+
 class Mob(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
@@ -158,6 +182,8 @@ def show_go_screen():
 	draw_text(screen, "548    10R    it_class", 40, WIDTH / 2, HEIGHT * 3 / 4)
 	if start_time > 0:
 		draw_text(screen, f"Your time: {int(time.time() - start_time)} seconds", 40, WIDTH / 2, HEIGHT * 3 / 5)
+	if score_f>0:
+		draw_text(screen, f"Your score: {score_f}", 40, WIDTH / 2, HEIGHT * 3 / 4.5)
 	pygame.display.flip()
 	waiting = True
 	while waiting:
@@ -175,10 +201,14 @@ background_rect = background.get_rect()
 player_img = pygame.image.load(path.join(img_dir, "fisherman1.png")).convert()
 monster_img = pygame.image.load(path.join(img_dir, "monsterF.png")).convert()
 trash_img = pygame.image.load(path.join(img_dir, "trash.png")).convert()
+fish_img1 = pygame.image.load(path.join(img_dir, "gold_fish1.png")).convert_alpha()
+fish_img2 = pygame.image.load(path.join(img_dir, "blue_fish.png")).convert_alpha()
+fish_img3 = pygame.image.load(path.join(img_dir, "green_fish.png")).convert_alpha()
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 trash = pygame.sprite.Group()
+fish = pygame.sprite.Group()
 powerups = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
@@ -186,6 +216,7 @@ all_sprites.add(player)
 for i in range(1):
 	newmob()
 	newtrash()
+	newfish(fish_img1)
 
 shoot_sound = pygame.mixer.Sound(path.join(snd_dir, 'minecraft-death-sound.mp3'))
 expl_sounds = []
@@ -197,6 +228,8 @@ pygame.mixer.music.load(path.join(snd_dir, 'treasure hun2t.mp3'))
 pygame.mixer.music.set_volume(0.2)
 score = 0
 start_time = 0
+score_f=0
+fish_dic={1:(fish_img1,"left"),2:(fish_img2,"left"),3:(fish_img3,"right")}
 pygame.mixer.music.play(loops=-1)
 running = True
 game_over = True
@@ -204,15 +237,18 @@ while running:
 	if game_over:
 		show_go_screen()
 		start_time = time.time()
+		score_f=0
 		game_over = False
 		all_sprites = pygame.sprite.Group()
 		mobs = pygame.sprite.Group()
 		trash = pygame.sprite.Group()
+		fish = pygame.sprite.Group()
 		bullets = pygame.sprite.Group()
 		powerups = pygame.sprite.Group()
 		player = Player()
 		all_sprites.add(player)
 		newtrash()
+		newfish(fish_img2)
 		for i in range(4):
 			newmob()
 		score = 0
@@ -232,6 +268,13 @@ while running:
 		if player.shield <= 0:
 			game_over = True
 			# running = False
+
+	hits_f = pygame.sprite.spritecollide(player, fish, True, pygame.sprite.collide_circle)
+	for hit in hits_f:
+		score_f+=1
+		print(score_f)
+		fish_obj = fish_dic[random.randint(1,3)]
+		newfish(fish_obj[0], fish_obj[1])
 
 	hits_t = pygame.sprite.spritecollide(player, trash, True, pygame.sprite.collide_circle)
 	for hit in hits_t:
