@@ -24,8 +24,8 @@ pygame.display.set_caption("Ultimate rafting")
 clock = pygame.time.Clock()
 
 
-def newmob():
-	m = Mob()
+def newmob(mob_img):
+	m = Mob(mob_img)
 	all_sprites.add(m)
 	mobs.add(m)
 
@@ -125,9 +125,9 @@ class Fish(pygame.sprite.Sprite):
 			self.rect.y = random.randrange(0, HEIGHT)
 
 class Mob(pygame.sprite.Sprite):
-	def __init__(self):
+	def __init__(self, mob_type):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = monster_img
+		self.image = mob_type
 		self.rect = self.image.get_rect()
 		self.rect.x = random.randrange(WIDTH - self.rect.width)
 		self.rect.y = random.randrange(-100, -40)
@@ -200,6 +200,8 @@ background = pygame.image.load(path.join(img_dir, 'background (1).png')).convert
 background_rect = background.get_rect()
 player_img = pygame.image.load(path.join(img_dir, "fisherman1.png")).convert()
 monster_img = pygame.image.load(path.join(img_dir, "monsterF.png")).convert()
+blue_monster_img = pygame.image.load(path.join(img_dir, "blue_monster.png")).convert_alpha()
+green_monster_img = pygame.image.load(path.join(img_dir, "green_monster.png")).convert_alpha()
 trash_img = pygame.image.load(path.join(img_dir, "trash.png")).convert()
 fish_img1 = pygame.image.load(path.join(img_dir, "gold_fish1.png")).convert_alpha()
 fish_img2 = pygame.image.load(path.join(img_dir, "blue_fish.png")).convert_alpha()
@@ -214,7 +216,7 @@ player = Player()
 all_sprites.add(player)
 all_sprites.add(player)
 for i in range(1):
-	newmob()
+	newmob(blue_monster_img)
 	newtrash()
 	newfish(fish_img1)
 
@@ -230,6 +232,7 @@ score = 0
 start_time = 0
 score_f=0
 fish_dic={1:(fish_img1,"left"),2:(fish_img2,"left"),3:(fish_img3,"right")}
+monster_dic = {1:monster_img,2:blue_monster_img,3:green_monster_img}
 pygame.mixer.music.play(loops=-1)
 running = True
 game_over = True
@@ -250,7 +253,7 @@ while running:
 		newtrash()
 		newfish(fish_img2)
 		for i in range(4):
-			newmob()
+			newmob(monster_img)
 		score = 0
 	clock.tick(FPS)
 
@@ -264,7 +267,8 @@ while running:
 	for hit in hits_m:
 		random.choice(expl_sounds).play()
 		player.shield -= hit.radius * 0.5
-		newmob()
+		moster_obj = monster_dic[random.randint(1,3)]
+		newmob(moster_obj)
 		if player.shield <= 0:
 			game_over = True
 			# running = False
