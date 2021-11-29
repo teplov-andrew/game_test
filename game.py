@@ -262,14 +262,15 @@ def draw_text(surf, text, size, x, y):
 
 
 def show_go_screen():
-	screen.blit(background, background_rect)
-	draw_text(screen, "Ultimate rafting", 128, WIDTH / 2, HEIGHT / 4)
-	draw_text(screen, "Press Enter to start", 70, WIDTH / 2, HEIGHT / 2)
-	draw_text(screen, "548    10R    it_class", 40, WIDTH / 2, HEIGHT * 3 / 4)
+	screen.blit(background_menu, background_rect)
+	# draw_text(screen, "Ultimate rafting", 128, WIDTH / 2, HEIGHT / 4)
+	# draw_text(screen, "Press Enter to start", 70, WIDTH / 2, HEIGHT / 2)
+	# draw_text(screen, "548    10R    it_class", 40, WIDTH / 2, HEIGHT * 3 / 4)
+
 	if start_time > 0:
-		draw_text(screen, f"Your time: {int(time.time() - start_time)} seconds", 40, WIDTH / 2, HEIGHT * 3 / 5)
+		draw_text(screen, f" {int(time.time() - start_time)}", 65, 386, 440)
 	if score_f > 0:
-		draw_text(screen, f"Your score: {score_f}", 40, WIDTH / 2, HEIGHT * 3 / 4.5)
+		draw_text(screen, f" {score_f}", 65, 290, 510)
 	pygame.display.flip()
 	waiting = True
 	while waiting:
@@ -283,6 +284,7 @@ def show_go_screen():
 
 
 background = pygame.image.load(path.join(img_dir, 'background.png')).convert()
+background_menu = pygame.image.load(path.join(img_dir, 'background_menu.png')).convert()
 background_rect = background.get_rect()
 player_img = pygame.image.load(path.join(img_dir, "fisherman1.png")).convert()
 monster_img = pygame.image.load(path.join(img_dir, "monsterF.png")).convert()
