@@ -29,15 +29,18 @@ def newmob(mob_img):
 	all_sprites.add(m)
 	mobs.add(m)
 
+
 def newtrash():
 	t = Trash()
 	all_sprites.add(t)
 	trash.add(t)
 
+
 def newfish(fish_img, dir="left"):
 	f = Fish(fish_img, dir)
 	all_sprites.add(f)
 	fish.add(f)
+
 
 def draw_shield_bar(surf, x, y, pct):
 	if pct < 0:
@@ -52,7 +55,7 @@ def draw_shield_bar(surf, x, y, pct):
 
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self):
+	def __init__(self, rocks = 15):
 		pygame.sprite.Sprite.__init__(self)
 		self.image = player_img
 		self.rect = self.image.get_rect()
@@ -61,6 +64,10 @@ class Player(pygame.sprite.Sprite):
 		self.speedx = 0
 		self.speedy = 0
 		self.shield = 100
+		self.rocks = rocks
+		self.last_shot = pygame.time.get_ticks()
+		self.shoot_event = pygame.USEREVENT + 1
+		pygame.time.set_timer(self.shoot_event, 500)
 
 	def update(self):
 		""" движение лодки с рыбаком
@@ -77,6 +84,9 @@ class Player(pygame.sprite.Sprite):
 			self.speedy = -7
 		if keystate[pygame.K_s]:
 			self.speedy = +7
+		if keystate[pygame.K_SPACE]:
+			if self.rocks > 0:
+				self.shoot()
 		# if keystate[pygame.K_ESCAPE]:
 		# 	pause()
 		# if keystate[pygame.K_RETURN]:
@@ -97,6 +107,16 @@ class Player(pygame.sprite.Sprite):
 		if self.rect.top < 0:
 			self.rect.top = 0
 
+	def shoot(self):
+		now = pygame.time.get_ticks()
+		if now - self.last_shot > 350:
+			self.last_shot = now
+			bullet = Bullet(self.rect.centerx, self.rect.top)
+			all_sprites.add(bullet)
+			bullets.add(bullet)
+			self.rocks -= 1
+
+
 class Trash(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
@@ -104,6 +124,7 @@ class Trash(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.x = random.randrange(WIDTH - self.rect.width)
 		self.rect.y = random.randrange(0, HEIGHT)
+
 
 class Fish(pygame.sprite.Sprite):
 	def __init__(self, fish_type, dir="left"):
@@ -124,6 +145,7 @@ class Fish(pygame.sprite.Sprite):
 			self.rect.x = random.randrange(0, WIDTH)
 			self.rect.y = random.randrange(0, HEIGHT)
 
+
 class Mob(pygame.sprite.Sprite):
 	def __init__(self, mob_type):
 		pygame.sprite.Sprite.__init__(self)
@@ -141,6 +163,24 @@ class Mob(pygame.sprite.Sprite):
 			self.rect.x = random.randrange(WIDTH - self.rect.width)
 			self.rect.y = random.randrange(-100, -4)
 			self.speedy = random.randrange(1, 8)
+
+
+class Bullet(pygame.sprite.Sprite):
+	def __init__(self, x, y):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.Surface((10, 20))
+		self.image = rock_img
+		self.rect = self.image.get_rect()
+		self.rect.bottom = y
+		self.rect.centerx = x
+		self.speedy = -10
+
+	def update(self):
+		self.rect.y += self.speedy
+		# убить, если он заходит за верхнюю часть экрана
+		if self.rect.bottom < 0:
+			self.kill()
+
 
 #
 # def print_text(message, x, y, font_color=BLACK, font_type='7fonts.ru_Raiders.ttf', font_size=30):
@@ -182,7 +222,7 @@ def show_go_screen():
 	draw_text(screen, "548    10R    it_class", 40, WIDTH / 2, HEIGHT * 3 / 4)
 	if start_time > 0:
 		draw_text(screen, f"Your time: {int(time.time() - start_time)} seconds", 40, WIDTH / 2, HEIGHT * 3 / 5)
-	if score_f>0:
+	if score_f > 0:
 		draw_text(screen, f"Your score: {score_f}", 40, WIDTH / 2, HEIGHT * 3 / 4.5)
 	pygame.display.flip()
 	waiting = True
@@ -206,13 +246,18 @@ trash_img = pygame.image.load(path.join(img_dir, "trash.png")).convert()
 fish_img1 = pygame.image.load(path.join(img_dir, "gold_fish1.png")).convert_alpha()
 fish_img2 = pygame.image.load(path.join(img_dir, "blue_fish.png")).convert_alpha()
 fish_img3 = pygame.image.load(path.join(img_dir, "green_fish.png")).convert_alpha()
+rock_img = pygame.image.load(path.join(img_dir, "rock.png")).convert_alpha()
+icon_img = pygame.image.load(path.join(img_dir, "icon.png")).convert()
+
+pygame.display.set_icon(icon_img)
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 trash = pygame.sprite.Group()
 fish = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
 powerups = pygame.sprite.Group()
-player = Player()
+player = Player(10)
 all_sprites.add(player)
 all_sprites.add(player)
 for i in range(1):
@@ -223,66 +268,90 @@ for i in range(1):
 shoot_sound = pygame.mixer.Sound(path.join(snd_dir, 'minecraft-death-sound.mp3'))
 expl_sounds = []
 for snd in ['minecraft-death-sound.mp3']:
-    expl_sounds.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
+	expl_sounds.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
 
+plus_sound = pygame.mixer.Sound(path.join(snd_dir, 'vyibor-nujnogo-deystviya.wav'))
+pls_sound = []
+for snd in ['vyibor-nujnogo-deystviya.wav']:
+	pls_sound.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
 
 pygame.mixer.music.load(path.join(snd_dir, 'treasure hun2t.mp3'))
 pygame.mixer.music.set_volume(0.2)
 score = 0
 start_time = 0
-score_f=0
-fish_dic={1:(fish_img1,"left"),2:(fish_img2,"left"),3:(fish_img3,"right")}
-monster_dic = {1:monster_img,2:blue_monster_img,3:green_monster_img}
+score_f = 0
+fish_dic = {1: (fish_img1, "left"), 2: (fish_img2, "left"), 3: (fish_img3, "right")}
+monster_dic = {1: monster_img, 2: blue_monster_img, 3: green_monster_img}
 pygame.mixer.music.play(loops=-1)
 running = True
 game_over = True
 while running:
 	if game_over:
 		show_go_screen()
-		start_time = time.time()
-		score_f=0
-		game_over = False
 		all_sprites = pygame.sprite.Group()
 		mobs = pygame.sprite.Group()
 		trash = pygame.sprite.Group()
 		fish = pygame.sprite.Group()
 		bullets = pygame.sprite.Group()
 		powerups = pygame.sprite.Group()
-		player = Player()
+		start_time = time.time()
+		score_f = 0
+		game_over = False
+		player = Player(10)
 		all_sprites.add(player)
 		newtrash()
 		newfish(fish_img2)
+
 		for i in range(4):
 			newmob(monster_img)
 		score = 0
+
+
+		# if event.type == pygame.KEYDOWN:
+		# 	print("KEYDOWN", event.key)
+		# 	# if event.key == pygame.K_e:
+		# 	print("K_SPACE")
+		# 	player.shoot()
 	clock.tick(FPS)
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
 
+	# event_shoot()
+
 	all_sprites.update()
+
+	hits_b = pygame.sprite.groupcollide(bullets, mobs, True, True)
+	for hit in hits_b:
+		print(hit)
+		moster_obj = monster_dic[random.randint(1, 3)]
+		newmob(moster_obj)
+	# m = Mob()
+	# all_sprites.add(m)
+	# mobs.add(m)
 
 	hits_m = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
 	for hit in hits_m:
 		random.choice(expl_sounds).play()
 		player.shield -= hit.radius * 0.5
-		moster_obj = monster_dic[random.randint(1,3)]
+		moster_obj = monster_dic[random.randint(1, 3)]
 		newmob(moster_obj)
 		if player.shield <= 0:
 			game_over = True
-			# running = False
+	# running = False
 
 	hits_f = pygame.sprite.spritecollide(player, fish, True, pygame.sprite.collide_circle)
 	for hit in hits_f:
-		score_f+=1
+		random.choice(pls_sound).play()
+		score_f += 1
 		print(score_f)
-		fish_obj = fish_dic[random.randint(1,3)]
+		fish_obj = fish_dic[random.randint(1, 3)]
 		newfish(fish_obj[0], fish_obj[1])
 
 	hits_t = pygame.sprite.spritecollide(player, trash, True, pygame.sprite.collide_circle)
 	for hit in hits_t:
-		# random.choice(expl_sounds).play()
+		random.choice(pls_sound).play()
 		newtrash()
 		if player.shield < 100:
 			# player.shield += hit.radius * 1.5
@@ -292,6 +361,7 @@ while running:
 	screen.blit(background, background_rect)
 	all_sprites.draw(screen)
 	draw_shield_bar(screen, 5, 5, player.shield)
+	draw_text(screen, f"Rocks: {player.rocks}", 35, 930, 10)
 	pygame.display.flip()
 
 pygame.quit()
