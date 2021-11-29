@@ -24,8 +24,8 @@ pygame.display.set_caption("Ultimate rafting")
 clock = pygame.time.Clock()
 
 
-def newmob(mob_img):
-	m = Mob(mob_img)
+def newmob(mob_type):
+	m = Mob(mob_type)
 	all_sprites.add(m)
 	mobs.add(m)
 
@@ -55,7 +55,7 @@ def draw_shield_bar(surf, x, y, pct):
 
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self, rocks = 15):
+	def __init__(self, rocks=15):
 		pygame.sprite.Sprite.__init__(self)
 		self.images = []
 		self.images.append(pygame.image.load('fisherman1_anim.png'))
@@ -63,7 +63,6 @@ class Player(pygame.sprite.Sprite):
 		self.images.append(pygame.image.load('fisherman3_anim.png'))
 		self.index = 0
 		self.image = self.images[self.index]
-		# self.image = player_img
 		self.rect = self.image.get_rect()
 		self.rect.centerx = WIDTH / 2
 		self.rect.bottom = HEIGHT - 10
@@ -90,7 +89,6 @@ class Player(pygame.sprite.Sprite):
 
 		# finally we will update the image that will be displayed
 		self.image = self.images[self.index]
-
 
 		""" движение лодки с рыбаком
 		 Ввверх, вниз, вправо, влево
@@ -137,6 +135,7 @@ class Player(pygame.sprite.Sprite):
 			all_sprites.add(bullet)
 			bullets.add(bullet)
 			self.rocks -= 1
+			random.choice(thr_sound).play()
 
 
 class Trash(pygame.sprite.Sprite):
@@ -171,14 +170,37 @@ class Fish(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
 	def __init__(self, mob_type):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = mob_type
+		self.mob_type = mob_type
+		self.images = {1:[pygame.image.load('monsterF.png')], 2:[pygame.image.load('monstraka1_anim.png'), pygame.image.load('monstraka2_anim.png')]}
+		self.index = 0
+		self.image = self.images[self.mob_type][self.index]
+		# self.image = pygame.transform.scale(self.image, (100, 50))
+		self.rect = self.image.get_rect()
+		self.rect.centerx = WIDTH / 2
+		self.rect.bottom = HEIGHT
 		self.rect = self.image.get_rect()
 		self.rect.x = random.randrange(WIDTH - self.rect.width)
 		self.rect.y = random.randrange(-100, -40)
 		self.speedy = random.randrange(1, 8)
 		self.speedx = random.randrange(-3, 3)
+		self.last_index = pygame.time.get_ticks()
 
 	def update(self):
+		# when the update method is called, we will increment the index
+		now = pygame.time.get_ticks()
+		if now - self.last_index > 150:
+			self.last_index = now
+			self.index += 1
+
+		# if the index is larger than the total images
+		if self.index >= len(self.images[self.mob_type]):
+			# we will make the index to 0 again
+			self.index = 0
+
+		# finally we will update the image that will be displayed
+		self.image = self.images[self.mob_type][self.index]
+		self.image = pygame.transform.scale(self.image, (130, 81))
+
 		self.rect.x += self.speedx
 		self.rect.y += self.speedy
 		if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
@@ -283,7 +305,7 @@ player = Player(10)
 all_sprites.add(player)
 all_sprites.add(player)
 for i in range(1):
-	newmob(blue_monster_img)
+	newmob(random.randint(1, 2))
 	newtrash()
 	newfish(fish_img1)
 
@@ -297,13 +319,18 @@ pls_sound = []
 for snd in ['vyibor-nujnogo-deystviya.wav']:
 	pls_sound.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
 
+throwing_sound = pygame.mixer.Sound(path.join(snd_dir, 'wood-rod-swing-whoosh_f1eqgq4d.mp3'))
+thr_sound = []
+for snd in ['wood-rod-swing-whoosh_f1eqgq4d.mp3']:
+	thr_sound.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
+
 pygame.mixer.music.load(path.join(snd_dir, 'treasure hun2t.mp3'))
 pygame.mixer.music.set_volume(0.2)
 score = 0
 start_time = 0
 score_f = 0
 fish_dic = {1: (fish_img1, "left"), 2: (fish_img2, "left"), 3: (fish_img3, "right")}
-monster_dic = {1: monster_img, 2: blue_monster_img, 3: green_monster_img}
+monster_dic = {1: monster_img, 2: green_monster_img}
 pygame.mixer.music.play(loops=-1)
 running = True
 game_over = True
@@ -325,15 +352,14 @@ while running:
 		newfish(fish_img2)
 
 		for i in range(4):
-			newmob(monster_img)
+			newmob(random.randint(1, 2))
 		score = 0
 
-
-		# if event.type == pygame.KEYDOWN:
-		# 	print("KEYDOWN", event.key)
-		# 	# if event.key == pygame.K_e:
-		# 	print("K_SPACE")
-		# 	player.shoot()
+	# if event.type == pygame.KEYDOWN:
+	# 	print("KEYDOWN", event.key)
+	# 	# if event.key == pygame.K_e:
+	# 	print("K_SPACE")
+	# 	player.shoot()
 	clock.tick(FPS)
 
 	for event in pygame.event.get():
@@ -347,8 +373,8 @@ while running:
 	hits_b = pygame.sprite.groupcollide(bullets, mobs, True, True)
 	for hit in hits_b:
 		print(hit)
-		moster_obj = monster_dic[random.randint(1, 3)]
-		newmob(moster_obj)
+		moster_obj = monster_dic[random.randint(1, 2)]
+		newmob(random.randint(1, 2))
 	# m = Mob()
 	# all_sprites.add(m)
 	# mobs.add(m)
@@ -356,9 +382,9 @@ while running:
 	hits_m = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
 	for hit in hits_m:
 		random.choice(expl_sounds).play()
-		player.shield -= hit.radius * 0.5
-		moster_obj = monster_dic[random.randint(1, 3)]
-		newmob(moster_obj)
+		player.shield -= 30
+		moster_obj = monster_dic[random.randint(1, 2)]
+		newmob(random.randint(1, 2))
 		if player.shield <= 0:
 			game_over = True
 	# running = False
