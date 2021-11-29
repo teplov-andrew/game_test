@@ -3,8 +3,8 @@ import random
 import time
 from os import path
 
-img_dir = path.join(path.dirname(__file__), 'D:\проекты\pythonProject\game')
-snd_dir = path.join(path.dirname(__file__), 'D:\проекты\pythonProject\game')
+img_dir = path.join(path.dirname(__file__), '.')
+snd_dir = path.join(path.dirname(__file__), '.')
 
 WIDTH = 1000
 HEIGHT = 800
@@ -57,7 +57,13 @@ def draw_shield_bar(surf, x, y, pct):
 class Player(pygame.sprite.Sprite):
 	def __init__(self, rocks = 15):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = player_img
+		self.images = []
+		self.images.append(pygame.image.load('fisherman1_anim.png'))
+		self.images.append(pygame.image.load('fisherman2_anim.png'))
+		self.images.append(pygame.image.load('fisherman3_anim.png'))
+		self.index = 0
+		self.image = self.images[self.index]
+		# self.image = player_img
 		self.rect = self.image.get_rect()
 		self.rect.centerx = WIDTH / 2
 		self.rect.bottom = HEIGHT - 10
@@ -66,10 +72,26 @@ class Player(pygame.sprite.Sprite):
 		self.shield = 100
 		self.rocks = rocks
 		self.last_shot = pygame.time.get_ticks()
+		self.last_index = pygame.time.get_ticks()
 		self.shoot_event = pygame.USEREVENT + 1
 		pygame.time.set_timer(self.shoot_event, 500)
 
 	def update(self):
+		# when the update method is called, we will increment the index
+		now = pygame.time.get_ticks()
+		if now - self.last_index > 150:
+			self.last_index = now
+			self.index += 1
+
+		# if the index is larger than the total images
+		if self.index >= len(self.images):
+			# we will make the index to 0 again
+			self.index = 0
+
+		# finally we will update the image that will be displayed
+		self.image = self.images[self.index]
+
+
 		""" движение лодки с рыбаком
 		 Ввверх, вниз, вправо, влево
 		            WASD"""
