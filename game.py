@@ -76,23 +76,15 @@ class Player(pygame.sprite.Sprite):
 		pygame.time.set_timer(self.shoot_event, 500)
 
 	def update(self):
-		# when the update method is called, we will increment the index
 		now = pygame.time.get_ticks()
 		if now - self.last_index > 150:
 			self.last_index = now
 			self.index += 1
-
-		# if the index is larger than the total images
 		if self.index >= len(self.images):
-			# we will make the index to 0 again
 			self.index = 0
-
-		# finally we will update the image that will be displayed
 		self.image = self.images[self.index]
 
-		""" движение лодки с рыбаком
-		 Ввверх, вниз, вправо, влево
-		            WASD"""
+
 		self.speedx = 0
 		self.speedy = 0
 		keystate = pygame.key.get_pressed()
@@ -107,15 +99,11 @@ class Player(pygame.sprite.Sprite):
 		if keystate[pygame.K_SPACE]:
 			if self.rocks > 0:
 				self.shoot()
-		# if keystate[pygame.K_ESCAPE]:
-		# 	pause()
-		# if keystate[pygame.K_RETURN]:
-		# 	paused=False
 
 		self.rect.x += self.speedx
 		self.rect.y += self.speedy
 
-		# Делаем так, чтобы рыбак не выходил за рамки экрана
+
 		if self.rect.right > WIDTH:
 			self.rect.right = WIDTH
 		if self.rect.left < 0:
@@ -176,7 +164,6 @@ class Mob(pygame.sprite.Sprite):
 		self.images = {1:[pygame.image.load('monster1_anim.png'),pygame.image.load('monster2_anim.png'),pygame.image.load('monster3_anim.png')], 2:[pygame.image.load('monstraka1_anim.png'), pygame.image.load('monstraka2_anim.png')]}
 		self.index = 0
 		self.image = self.images[self.mob_type][self.index]
-		# self.image = pygame.transform.scale(self.image, (100, 50))
 		self.rect = self.image.get_rect()
 		self.rect.centerx = WIDTH / 2
 		self.rect.bottom = HEIGHT
@@ -188,18 +175,14 @@ class Mob(pygame.sprite.Sprite):
 		self.last_index = pygame.time.get_ticks()
 
 	def update(self):
-		# when the update method is called, we will increment the index
 		now = pygame.time.get_ticks()
 		if now - self.last_index > 150:
 			self.last_index = now
 			self.index += 1
 
-		# if the index is larger than the total images
 		if self.index >= len(self.images[self.mob_type]):
-			# we will make the index to 0 again
 			self.index = 0
 
-		# finally we will update the image that will be displayed
 		self.image = self.images[self.mob_type][self.index]
 		self.image = pygame.transform.scale(self.image, (130, 81))
 
@@ -223,32 +206,8 @@ class Bullet(pygame.sprite.Sprite):
 
 	def update(self):
 		self.rect.y += self.speedy
-		# убить, если он заходит за верхнюю часть экрана
 		if self.rect.bottom < 0:
 			self.kill()
-
-
-#
-# def print_text(message, x, y, font_color=BLACK, font_type='7fonts.ru_Raiders.ttf', font_size=30):
-# 	font_type = pygame.font.Font(font_type, font_size)
-# 	text = font_type.render(message, True, font_color)
-# 	screen.blit(text, (x, y))
-
-
-# def pause():
-# 	paused = True
-# 	while paused:
-# 		clock.tick(FPS)
-# 		for event in pygame.event.get():
-# 			if event.type == pygame.QUIT:
-# 				paused = False
-#
-# 		keys = pygame.key.get_pressed()
-# 		if keys[pygame.K_RETURN]:
-# 			paused = False
-# 		print_text('PAUSED. PRESS ENTER TO CONTINUE', 1600, 3000)
-# 		all_sprites.update()
-
 
 font_name = pygame.font.match_font('7fonts.ru_Raiders.ttf')
 
@@ -263,9 +222,6 @@ def draw_text(surf, text, size, x, y):
 
 def show_go_screen():
 	screen.blit(background_menu, background_rect)
-	# draw_text(screen, "Ultimate rafting", 128, WIDTH / 2, HEIGHT / 4)
-	# draw_text(screen, "Press Enter to start", 70, WIDTH / 2, HEIGHT / 2)
-	# draw_text(screen, "548    10R    it_class", 40, WIDTH / 2, HEIGHT * 3 / 4)
 
 	if start_time > 0:
 		draw_text(screen, f" {int(time.time() - start_time)}", 65, 386, 440)
@@ -359,18 +315,12 @@ while running:
 			newmob(random.randint(1, 2))
 		score = 0
 
-	# if event.type == pygame.KEYDOWN:
-	# 	print("KEYDOWN", event.key)
-	# 	# if event.key == pygame.K_e:
-	# 	print("K_SPACE")
-	# 	player.shoot()
 	clock.tick(FPS)
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
 
-	# event_shoot()
 
 	all_sprites.update()
 
@@ -379,9 +329,7 @@ while running:
 		print(hit)
 		moster_obj = monster_dic[random.randint(1, 2)]
 		newmob(random.randint(1, 2))
-	# m = Mob()
-	# all_sprites.add(m)
-	# mobs.add(m)
+
 
 	hits_m = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
 	for hit in hits_m:
@@ -391,7 +339,6 @@ while running:
 		newmob(random.randint(1, 2))
 		if player.shield <= 0:
 			game_over = True
-	# running = False
 
 	hits_f = pygame.sprite.spritecollide(player, fish, True, pygame.sprite.collide_circle)
 	for hit in hits_f:
@@ -406,7 +353,6 @@ while running:
 		random.choice(pls_sound).play()
 		newtrash()
 		if player.shield < 100:
-			# player.shield += hit.radius * 1.5
 			player.shield = 100
 
 	screen.fill(BLACK)
