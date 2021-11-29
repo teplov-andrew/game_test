@@ -171,7 +171,7 @@ class Mob(pygame.sprite.Sprite):
 	def __init__(self, mob_type):
 		pygame.sprite.Sprite.__init__(self)
 		self.mob_type = mob_type
-		self.images = {1:[pygame.image.load('monsterF.png')], 2:[pygame.image.load('monstraka1_anim.png'), pygame.image.load('monstraka2_anim.png')]}
+		self.images = {1:[pygame.image.load('monster1_anim.png'),pygame.image.load('monster2_anim.png'),pygame.image.load('monster3_anim.png')], 2:[pygame.image.load('monstraka1_anim.png'), pygame.image.load('monstraka2_anim.png')]}
 		self.index = 0
 		self.image = self.images[self.mob_type][self.index]
 		# self.image = pygame.transform.scale(self.image, (100, 50))
